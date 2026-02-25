@@ -29,7 +29,7 @@ module tx_baud_generator #(
       if(tx_count == tx_cycle - 1) begin	// transmitter baud clk pulse & counter reset
         tx_count <= 0;
         tx_tick  <= 1;
-      endza
+      end
       else begin
         tx_tick <= 0;
         tx_count <= tx_count + 1'b1;			// counter updatation
@@ -37,4 +37,5 @@ module tx_baud_generator #(
     end
   end
   
+
 endmodule
