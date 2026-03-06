@@ -144,3 +144,5 @@ module apb_top_module #(parameter DATA_WIDTH  = 16,		// data width
   );
   
 endmodule
+
+// https://edaplayground.com/x/dnL5
