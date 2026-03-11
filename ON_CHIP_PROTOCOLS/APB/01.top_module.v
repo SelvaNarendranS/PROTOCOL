@@ -1,10 +1,10 @@
 // APB -- TOP MODULE
 
-`include "master.sv"
-`include "slave1.sv"
-`include "slave2.sv"
-`include "slave_decoder1.sv"
-`include "apb_fifo_slave3.sv"
+`include "master.v"
+`include "slave1.v"
+`include "slave2.v"
+`include "slave_decoder1.v"
+`include "apb_fifo_slave3.v"
 
 `define SLAVE_MODE 2
 `define SLV_ADDR_WIDTH 12
@@ -146,3 +146,4 @@ module apb_top_module #(parameter DATA_WIDTH  = 16,		// data width
 endmodule
 
 // https://edaplayground.com/x/dnL5
+
