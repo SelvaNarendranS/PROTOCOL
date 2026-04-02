@@ -25,7 +25,6 @@ module i2c_top_module #(
     output 					  busy,
     output				  	  ack_err,		// acknowledgement error - not ack
     output 					  done,
-    output					  framing_err,
     output [DATA_WIDTH-1:0]   data_out,		// output data -- received data
     inout				  scl,			// serial clock
     inout				  sda			// serial data
@@ -74,11 +73,11 @@ module i2c_top_module #(
     .clk(clk),
     .rst(rst),
     .done(done),
-    .framing_err(framing_err),
     .data_out(data_out),
     .scl(scl),
     .sda(sda)
   );
 endmodule
+
 
 // https://edaplayground.com/x/eFPL
