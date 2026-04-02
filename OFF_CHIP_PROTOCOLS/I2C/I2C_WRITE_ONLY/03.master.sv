@@ -37,26 +37,16 @@ module i2c_master #(
   reg [ADDRESS_WIDTH:0] 	addr_sft_reg;	// input address + rw shift register	
   
   // internal register for -- open drain control
-//   wire scl_out;		// serial clock output signal //-----------
   reg  sda_out;		// serial data output signal
   
   // Logic to release SCL when not active
   reg scl_enable;
-//   reg start_seen; //----------------------
-
+  
   // SDA & SCL line only drives "0" or "z" -- setting the both line as open drain
-//   assign scl = (scl_enable) ? ((scl_out) ? 1'bz : 1'b0) : 1'bz;
-//   assign scl = (scl_out) ? 1'bz : 1'b0;	
   assign sda = (sda_out) ? 1'bz : 1'b0;
   assign scl = (scl_enable && !scl_clk) ? 1'b0 : 1'bz;
-  
-//   reg [2:0]scl_sync;
-//   always @(posedge clk) begin
-//     scl_sync <= {scl_sync[1:0], scl_out};
-//   end
-//   wire scl_falling = (scl_sync[2:1] == 2'b10);
-//   wire scl_rising = (scl_sync[2:1] == 2'b01);
-  
+
+  // serial clock edge detection
   wire scl_rising = scl_tick && scl_clk;
   wire scl_falling = scl_tick && (!scl_clk);
   
@@ -69,10 +59,8 @@ module i2c_master #(
   					WRITE_ACK = 5,
   					STOP 	  = 6;
   reg [2:0]state;
-//   assign scl_enable = (state != IDLE && state != START);
-  
-//   reg [3:0] falling_count = 0;
-  
+
+  // i2c master fsm logic
   always @(posedge clk or negedge rst) begin
     if(!rst) begin			// active low reset
       state 	 <= IDLE;	// default state
@@ -81,12 +69,10 @@ module i2c_master #(
       data_count <= 0;
       addr_count <= 0;		// resetting the counter
       ack_err	 <= 0;
-//       start_seen <= 0;
     end
     
     else begin
       case(state)
-        
         // -------------- IDLE state ------------------- 
         IDLE : begin
           sda_out <= 1;		// setting the scl and sda line high
@@ -101,22 +87,13 @@ module i2c_master #(
         
         // -------------- START state -------------------
         START : begin
-//           if(scl_clk) begin
           sda_out    <= 0;		// sda line pulls low -- start bit --- sda falls while scl is high
-//           end
-//           if(scl_out) begin
-//             start_seen <= 1;
-//           end
           if(scl_falling) begin
             scl_enable <= 1;
-//             data_count <= DATA_WIDTH;
             addr_count <= ADDRESS_WIDTH; // address + rw bit
             state 	   <= ADDRESS;	
             sda_out    <= addr_sft_reg[ADDRESS_WIDTH]; // preloading MSB bit
-//             start_seen <= 0;
           end
-//           else if(scl_falling && sda_out)
-//             sda_out <= 0;
         end
         
         // -------------- ADDRESS state -------------------
@@ -124,14 +101,11 @@ module i2c_master #(
           if(scl_falling) begin		
             if(addr_count == 0) begin
               state 	 <= ADDR_ACK;
-//               addr_count <= ADDRESS_WIDTH; // Reset data counter
               sda_out 	 <= 1;          // release SDA for AC
             end
             else begin
               addr_count <= addr_count - 1;		// decrementing the address counter
               sda_out	 <= addr_sft_reg[addr_count-1];	// sending address + rw bits on scl cl low
-//               falling_count++;
-              							// address shift register[0 ]read-1 / write-0
             end
           end
         end
@@ -150,9 +124,6 @@ module i2c_master #(
             end
           end
         end
-//           else if(!scl_out)
-//             sda_out <= 1;		// release sda line for slave to send acknowledgement
-//         end
      
         // -------------- WRITE state -------------------
         WRITE : begin
@@ -172,13 +143,9 @@ module i2c_master #(
         WRITE_ACK : begin
           sda_out <= 1;		//release sda line -- for slave to send acknowledgement
           if(scl_rising) begin		// at present scl - high and previous - low sample data ack
-//             state <= STOP;
             if(sda) 				// if ack(sda line) == 1 -- error in data received
               ack_err <= 1;			// NACK received
             state <= STOP;
-//           end
-//           else if(!scl_out)
-//             sda_out <= 1;		// release sda line -- for slave to send acknowledgement
           end
         end
         
