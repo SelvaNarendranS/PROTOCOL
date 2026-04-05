@@ -1,4 +1,4 @@
-// I2C top module -- only for write
+// I2C top module -- write and read operation
 `include "clock_divider.v"
 `include "master.v"
 `include "slave.v"
